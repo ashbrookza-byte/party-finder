@@ -1,115 +1,84 @@
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
+import { NavLink, Link } from 'react-router-dom'
 
-// ── Nav links — edit labels and section IDs to match your page ──
 const LINKS = [
-    { label: 'About',   id: 'about'   },
-    { label: 'Work',    id: 'work'    },
-    { label: 'Contact', id: 'contact' },
+  { to: '/venues', label: 'Venues' },
+  { to: '/events', label: 'Events' },
+  { to: '/djs', label: 'DJs' },
 ]
 
 export function NavBar() {
-    const [scrolled, setScrolled] = useState(false)
-    const [open,     setOpen]     = useState(false)
+  const [scrolled, setScrolled] = useState(false)
+  const [open, setOpen] = useState(false)
 
-    useEffect(() => {
-        const onScroll = () => setScrolled(window.scrollY > 60)
-        window.addEventListener('scroll', onScroll, { passive: true })
-        return () => window.removeEventListener('scroll', onScroll)
-    }, [])
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 30)
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
 
-    useEffect(() => {
-        const onResize = () => { if (window.innerWidth > 640) setOpen(false) }
-        window.addEventListener('resize', onResize)
-        return () => window.removeEventListener('resize', onResize)
-    }, [])
+  const linkBase =
+    'text-[0.6rem] tracking-[0.3em] uppercase transition-colors py-1'
+  const linkInactive = 'text-sand/50 hover:text-sand'
+  const linkActive = 'text-gold'
 
-    function scrollTo(id) {
-        document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })
-        setOpen(false)
-    }
+  return (
+    <>
+      <nav
+        className={
+          'fixed inset-x-0 top-0 z-50 h-14 flex items-center justify-between px-6 transition-all ' +
+          (scrolled || open
+            ? 'bg-bg/90 backdrop-blur-md border-b border-border'
+            : 'bg-transparent border-b border-transparent')
+        }
+      >
+        <Link
+          to="/"
+          onClick={() => setOpen(false)}
+          className="font-serif text-lg tracking-[0.18em] text-sand"
+        >
+          PartyFinder<span className="text-gold">.</span>
+        </Link>
 
-    const bg = scrolled || open ? 'rgba(10,8,5,0.92)' : 'transparent'
+        <div className="hidden sm:flex items-center gap-8">
+          {LINKS.map((l) => (
+            <NavLink
+              key={l.to}
+              to={l.to}
+              className={({ isActive }) =>
+                `${linkBase} ${isActive ? linkActive : linkInactive}`
+              }
+            >
+              {l.label}
+            </NavLink>
+          ))}
+        </div>
 
-    return (
-        <>
-            <nav style={{
-                position: 'fixed', top: 0, left: 0, right: 0, zIndex: 200,
-                height: 52,
-                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                padding: '0 1.6rem',
-                background: bg,
-                backdropFilter: scrolled || open ? 'blur(14px)' : 'none',
-                WebkitBackdropFilter: scrolled || open ? 'blur(14px)' : 'none',
-                borderBottom: scrolled ? '1px solid var(--border)' : '1px solid transparent',
-                transition: 'background 0.35s, border-color 0.35s',
-            }}>
-                {/* Logo / wordmark — replace with your own */}
-                <button
-                    onClick={() => { window.scrollTo({ top: 0, behavior: 'smooth' }); setOpen(false) }}
-                    style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}
-                >
-                    {/* <img src="/logo.png" alt="Logo" style={{ height: 22 }} /> */}
-                    <span style={{ fontFamily: 'var(--font-serif)', fontSize: '1.1rem', letterSpacing: '0.08em', color: 'var(--sand)', opacity: 0.9 }}>
-                        Project Name
-                    </span>
-                </button>
+        <button
+          className="sm:hidden text-sand/70 text-xl leading-none px-1"
+          onClick={() => setOpen((o) => !o)}
+          aria-label="Menu"
+        >
+          {open ? '✕' : '☰'}
+        </button>
+      </nav>
 
-                {/* Desktop links */}
-                <div className="nav-desktop" style={{ display: 'flex', alignItems: 'center', gap: '1.8rem' }}>
-                    {LINKS.map(l => (
-                        <button key={l.id} onClick={() => scrollTo(l.id)} style={linkSt}>
-                            {l.label}
-                        </button>
-                    ))}
-                </div>
-
-                {/* Mobile hamburger */}
-                <button
-                    className="nav-hamburger"
-                    onClick={() => setOpen(o => !o)}
-                    style={{ display: 'none', background: 'none', border: 'none', cursor: 'pointer', padding: '4px 2px', color: 'rgba(237,232,223,0.7)', fontSize: '1.3rem', lineHeight: 1 }}
-                    aria-label="Menu"
-                >
-                    {open ? '✕' : '☰'}
-                </button>
-            </nav>
-
-            {/* Mobile drawer */}
-            {open && (
-                <div style={{
-                    position: 'fixed', top: 52, left: 0, right: 0, zIndex: 199,
-                    background: 'rgba(10,8,5,0.96)',
-                    backdropFilter: 'blur(16px)',
-                    WebkitBackdropFilter: 'blur(16px)',
-                    borderBottom: '1px solid var(--border)',
-                    display: 'flex', flexDirection: 'column', alignItems: 'center',
-                    padding: '1.2rem 0 1.5rem',
-                    gap: '0.2rem',
-                }}>
-                    {LINKS.map(l => (
-                        <button key={l.id} onClick={() => scrollTo(l.id)} style={mobileLinkSt}>
-                            {l.label}
-                        </button>
-                    ))}
-                </div>
-            )}
-        </>
-    )
-}
-
-const linkSt = {
-    background: 'none', border: 'none', cursor: 'pointer',
-    fontSize: '0.52rem', letterSpacing: '0.28em', textTransform: 'uppercase',
-    color: 'rgba(237,232,223,0.5)',
-    padding: '4px 0',
-    transition: 'color 0.2s',
-}
-
-const mobileLinkSt = {
-    background: 'none', border: 'none', cursor: 'pointer',
-    fontSize: '0.58rem', letterSpacing: '0.28em', textTransform: 'uppercase',
-    color: 'rgba(237,232,223,0.5)',
-    padding: '0.65rem 2rem',
-    width: '100%', textAlign: 'center',
-    transition: 'color 0.2s',
+      {open && (
+        <div className="fixed inset-x-0 top-14 z-40 bg-bg/95 backdrop-blur-md border-b border-border flex flex-col items-center py-4 sm:hidden">
+          {LINKS.map((l) => (
+            <NavLink
+              key={l.to}
+              to={l.to}
+              onClick={() => setOpen(false)}
+              className={({ isActive }) =>
+                `${linkBase} ${isActive ? linkActive : linkInactive} py-3 w-full text-center`
+              }
+            >
+              {l.label}
+            </NavLink>
+          ))}
+        </div>
+      )}
+    </>
+  )
 }

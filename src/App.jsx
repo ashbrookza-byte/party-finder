@@ -1,17 +1,16 @@
-import { NavBar }  from './components/NavBar'
-import { Hero }    from './components/Hero'
-import './App.css'
+import { Outlet } from 'react-router-dom'
+import { NavBar } from './components/NavBar'
 
-function App() {
+export default function App() {
   return (
-    <>
+    <div className="min-h-screen bg-bg text-sand">
       <NavBar />
-      <main>
-        <Hero />
-        {/* Add sections here */}
+      <main className="pt-14">
+        <Outlet />
       </main>
-    </>
+      <footer className="mt-24 border-t border-border/60 py-8 text-center text-xs tracking-[0.3em] uppercase text-muted">
+        Cape Town · Built for the night
+      </footer>
+    </div>
   )
 }
-
-export default App
