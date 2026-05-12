@@ -1,0 +1,22 @@
+/* ── ANIMATIONS ── */
+@keyframes riseIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ── NAVBAR ── */
+.nav-hamburger { display: none !important; }
+@media (max-width: 640px) {
+  .nav-desktop   { display: none !important; }
+  .nav-hamburger { display: block !important; }
+}
+.nav-desktop button:hover { color: rgba(237,232,223,0.85) !important; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 600px) {
+  .field-row { grid-template-columns: 1fr !important; }
+}
