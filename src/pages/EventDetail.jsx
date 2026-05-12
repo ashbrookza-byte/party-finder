@@ -1,143 +1,211 @@
+import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { getDJ, getEvent, getGenre, getVenue } from '../data/mockData'
+import {
+  ArrowLeft,
+  Calendar,
+  Clock,
+  MapPin,
+  Ticket,
+  Shield,
+  Users,
+  ChevronRight,
+} from 'lucide-react'
+import { getEvent, getDJ, getAuthor, getGenre, authorRoute } from '../data'
+import { formatCount, formatLongDate, formatPrice } from '../lib/format'
 
 export default function EventDetail() {
   const { id } = useParams()
   const event = getEvent(id)
+  const [saved, setSaved] = useState(false)
 
   if (!event) {
     return (
-      <div className="px-6 py-24 max-w-3xl mx-auto text-center">
-        <h1 className="font-serif text-4xl">Event not found</h1>
-        <Link to="/events" className="inline-block mt-6 text-gold">
-          ← Back to events
+      <div className="px-6 py-24 text-center">
+        <h1 className="font-serif text-3xl">Event not found</h1>
+        <Link to="/" className="inline-block mt-6 text-gold">
+          ← Back to home
         </Link>
       </div>
     )
   }
 
-  const venue = event.venueId ? getVenue(event.venueId) : null
+  const host = getAuthor(event.host)
   const lineup = event.lineup.map(getDJ).filter(Boolean)
 
   return (
-    <div>
-      <div
-        className="h-[50vh] min-h-[320px] bg-cover bg-center relative"
-        style={{
-          backgroundImage: `linear-gradient(to bottom, rgba(10,8,7,0.2), rgba(10,8,7,0.95)), url('${event.image}')`,
-        }}
-      >
-        <div className="absolute bottom-0 left-0 right-0 px-6 sm:px-12 pb-10 max-w-6xl mx-auto">
-          <Link
-            to="/events"
-            className="inline-block mb-4 text-[0.55rem] tracking-[0.3em] uppercase text-sand/60 hover:text-sand"
-          >
-            ← All events
-          </Link>
-          <p className="text-[0.6rem] tracking-[0.4em] uppercase text-gold mb-3">
-            {formatDate(event.date)}
+    <div className="pb-6">
+      <div className="relative">
+        <img
+          src={event.cover}
+          alt=""
+          className="block w-full aspect-square object-cover bg-surface"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-bg/95 via-bg/20 to-transparent pointer-events-none" />
+        <Link
+          to="/"
+          className="absolute top-3 left-3 px-3 py-1.5 rounded-full bg-bg/60 backdrop-blur text-[0.55rem] tracking-[0.3em] uppercase text-sand/80 hover:text-sand flex items-center gap-1"
+        >
+          <ArrowLeft size={12} /> Back
+        </Link>
+        <div className="absolute bottom-0 left-0 right-0 p-4">
+          <p className="text-[0.55rem] tracking-[0.3em] uppercase text-gold mb-1">
+            {formatLongDate(event.date)}
           </p>
-          <h1 className="font-serif text-5xl sm:text-7xl uppercase tracking-[0.04em]">
+          <h1 className="font-serif text-3xl uppercase tracking-[0.04em] leading-tight">
             {event.name}
           </h1>
-          <p className="text-sand/70 mt-3">{event.location}</p>
         </div>
       </div>
 
-      <div className="px-6 sm:px-12 py-12 max-w-6xl mx-auto grid lg:grid-cols-3 gap-10">
-        <div className="lg:col-span-2 space-y-12">
-          <section>
-            <h2 className="text-[0.6rem] tracking-[0.3em] uppercase text-gold mb-3">
-              About
-            </h2>
-            <p className="font-serif italic text-2xl text-sand/85 leading-snug">
-              {event.blurb}
-            </p>
-          </section>
-
-          <section>
-            <h2 className="text-[0.6rem] tracking-[0.3em] uppercase text-gold mb-4">
-              Line-up
-            </h2>
-            <div className="grid sm:grid-cols-2 gap-3">
-              {lineup.map((d) => (
-                <Link
-                  key={d.id}
-                  to={`/djs/${d.id}`}
-                  className="group flex items-center gap-4 p-3 rounded-lg bg-surface border border-border hover:border-gold/40 transition"
-                >
-                  <div
-                    className="h-14 w-14 rounded-full bg-cover bg-center shrink-0"
-                    style={{ backgroundImage: `url('${d.image}')` }}
-                  />
-                  <div className="flex-1 min-w-0">
-                    <p className="font-serif text-xl group-hover:text-gold-light transition truncate">
-                      {d.name}
-                    </p>
-                    <p className="text-xs text-muted truncate">
-                      {d.genres.map((g) => getGenre(g)?.label).join(' · ')}
-                    </p>
-                  </div>
-                  <span className="text-gold">→</span>
-                </Link>
-              ))}
+      <div className="px-4 pt-4">
+        {host && (
+          <Link
+            to={authorRoute(event.host)}
+            className="flex items-center gap-3 p-3 rounded-lg bg-surface border border-border hover:border-gold/40 transition"
+          >
+            <img
+              src={host.avatar}
+              alt=""
+              className="h-10 w-10 rounded-full object-cover shrink-0"
+            />
+            <div className="flex-1 min-w-0">
+              <p className="text-[0.5rem] tracking-[0.25em] uppercase text-gold">
+                {event.host.type === 'club' ? 'At club' : 'At venue'}
+              </p>
+              <p className="text-sm text-sand truncate">{host.name}</p>
+              <p className="text-xs text-muted truncate">{host.address}</p>
             </div>
-          </section>
+            <ChevronRight size={16} className="text-gold shrink-0" />
+          </Link>
+        )}
 
-          <section>
-            <h2 className="text-[0.6rem] tracking-[0.3em] uppercase text-gold mb-4">
-              Genres
-            </h2>
-            <div className="flex flex-wrap gap-2">
-              {event.genres.map((id) => (
-                <span
-                  key={id}
-                  className="text-[0.55rem] tracking-[0.3em] uppercase px-3 py-1.5 rounded border border-border text-sand/70"
-                >
-                  {getGenre(id)?.label ?? id}
-                </span>
-              ))}
-            </div>
-          </section>
+        <p className="text-sm text-sand/85 mt-4">{event.blurb}</p>
+
+        <div className="mt-4 grid grid-cols-2 gap-2">
+          <Fact icon={Calendar} label="Date" value={formatLongDate(event.date)} />
+          <Fact icon={Clock} label="Time" value={`${event.startTime} – ${event.endTime}`} />
+          <Fact
+            icon={Ticket}
+            label="Tickets"
+            value={event.ticketPriceFrom === 0 ? 'Free' : `From ${formatPrice(event.ticketPriceFrom)}`}
+          />
+          <Fact icon={Shield} label="Age" value={event.ageRestriction === 0 ? 'All ages' : `${event.ageRestriction}+`} />
+          {event.attendeeCount > 0 && (
+            <Fact icon={Users} label="Expected" value={`${formatCount(event.attendeeCount)} people`} />
+          )}
+          {host && (
+            <Fact icon={MapPin} label="Where" value={host.area || host.address} />
+          )}
         </div>
 
-        <aside className="space-y-6">
-          <div className="p-5 rounded-lg bg-surface border border-border">
-            <p className="text-[0.55rem] tracking-[0.3em] uppercase text-gold mb-2">
-              When & where
+        <div className="mt-5 flex items-center gap-2">
+          {event.status === 'past' ? (
+            <span className="flex-1 px-4 py-3 text-center rounded-full text-[0.55rem] tracking-[0.3em] uppercase border border-sand/15 text-sand/50">
+              Past event
+            </span>
+          ) : event.ticketUrl ? (
+            <a
+              href={event.ticketUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="flex-1 px-4 py-3 text-center rounded-full text-[0.55rem] tracking-[0.3em] uppercase bg-gold/20 border border-gold/50 text-gold-light hover:bg-gold/30 transition"
+            >
+              Get tickets
+            </a>
+          ) : (
+            <span className="flex-1 px-4 py-3 text-center rounded-full text-[0.55rem] tracking-[0.3em] uppercase border border-gold/40 text-gold-light">
+              At the door
+            </span>
+          )}
+          <button
+            onClick={() => setSaved((s) => !s)}
+            className={
+              'px-4 py-3 rounded-full text-[0.55rem] tracking-[0.3em] uppercase border transition ' +
+              (saved
+                ? 'border-gold/50 text-gold-light bg-gold/10'
+                : 'border-sand/15 text-sand/70 hover:text-sand hover:border-sand/30')
+            }
+          >
+            {saved ? 'Saved' : 'Save'}
+          </button>
+        </div>
+      </div>
+
+      <Section title="Line-up">
+        <div className="px-4 grid grid-cols-2 gap-2">
+          {lineup.map((d) => (
+            <Link
+              key={d.id}
+              to={`/djs/${d.id}`}
+              className="flex items-center gap-3 p-3 rounded-lg bg-surface border border-border hover:border-gold/40 transition"
+            >
+              <img
+                src={d.avatar}
+                alt=""
+                className="h-10 w-10 rounded-full object-cover shrink-0"
+              />
+              <div className="min-w-0">
+                <p className="text-sm text-sand truncate">{d.name}</p>
+                <p className="text-xs text-muted truncate">
+                  {d.genres.map((g) => getGenre(g)?.label).join(' · ')}
+                </p>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </Section>
+
+      <Section title="Genres">
+        <div className="px-4 flex flex-wrap gap-1.5">
+          {event.genres.map((id) => (
+            <span
+              key={id}
+              className="text-[0.55rem] tracking-[0.3em] uppercase px-2.5 py-1 rounded-full border border-border text-sand/70"
+            >
+              {getGenre(id)?.label ?? id}
+            </span>
+          ))}
+        </div>
+      </Section>
+
+      <Section title="Location">
+        <div className="px-4">
+          <div className="p-3.5 rounded-lg bg-surface border border-border">
+            <p className="text-sand text-sm">
+              {host?.address || 'Location TBA'}
             </p>
-            <p className="font-serif text-2xl">{formatDate(event.date)}</p>
-            <p className="text-sm text-sand/70 mt-2">{event.location}</p>
-            {venue && (
-              <Link
-                to={`/venues/${venue.id}`}
-                className="block mt-3 text-xs text-gold hover:text-gold-light"
-              >
-                View {venue.name} →
-              </Link>
-            )}
-            <div className="mt-4 h-32 rounded bg-surface-2 border border-border flex items-center justify-center text-xs text-muted">
+            <p className="text-xs text-muted mt-2">
+              {event.coords.lat.toFixed(4)}, {event.coords.lng.toFixed(4)}
+            </p>
+            <div className="mt-3 h-32 rounded bg-surface-2 border border-border flex items-center justify-center text-xs text-muted">
               Map preview
             </div>
           </div>
-
-          <button className="w-full px-4 py-3 rounded-full text-[0.55rem] tracking-[0.3em] uppercase bg-gold/20 border border-gold/50 text-gold-light hover:bg-gold/30 transition">
-            Get tickets
-          </button>
-          <button className="w-full px-4 py-3 rounded-full text-[0.55rem] tracking-[0.3em] uppercase border border-sand/15 text-sand/70 hover:text-sand hover:border-sand/30 transition">
-            Save for later
-          </button>
-        </aside>
-      </div>
+        </div>
+      </Section>
     </div>
   )
 }
 
-function formatDate(iso) {
-  return new Date(iso).toLocaleDateString('en-ZA', {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  })
+function Fact({ icon: Icon, label, value }) {
+  return (
+    <div className="p-3 rounded-lg bg-surface border border-border">
+      <div className="flex items-center gap-1.5 text-[0.55rem] tracking-[0.25em] uppercase text-gold mb-1">
+        <Icon size={11} />
+        {label}
+      </div>
+      <p className="text-sm text-sand">{value}</p>
+    </div>
+  )
+}
+
+function Section({ title, children }) {
+  return (
+    <section className="mt-6">
+      <h2 className="px-4 mb-2 text-[0.6rem] tracking-[0.3em] uppercase text-gold">
+        {title}
+      </h2>
+      {children}
+    </section>
+  )
 }

@@ -1,26 +1,38 @@
 import { useMemo, useState } from 'react'
-import { POSTS, DJS } from '../data'
+import { POSTS, CLUBS, EVENTS } from '../data'
 import { PostCard } from '../components/PostCard'
 import { EntityCard } from '../components/EntityCard'
 import { GenreFilter } from '../components/GenreFilter'
 
-export default function DJs() {
+function clubMatchesGenre(club, genre) {
+  if (!genre) return true
+  return club.schedule.some((s) => s.genres.includes(genre))
+}
+
+export default function Clubs() {
   const [genre, setGenre] = useState(null)
 
   const feed = useMemo(() => {
-    const djs = genre ? DJS.filter((d) => d.genres.includes(genre)) : DJS
+    const clubs = CLUBS.filter((c) => clubMatchesGenre(c, genre))
 
-    const posts = POSTS.filter((p) => p.author.type === 'dj').filter((p) => {
+    const posts = POSTS.filter((p) => p.author.type === 'club').filter((p) => {
       if (!genre) return true
-      const dj = DJS.find((d) => d.id === p.author.id)
-      return dj ? dj.genres.includes(genre) : false
+      const club = CLUBS.find((c) => c.id === p.author.id)
+      if (!club) return false
+      if (!clubMatchesGenre(club, genre)) return false
+      // also filter by linked event genre if present
+      if (p.eventId) {
+        const e = EVENTS.find((ev) => ev.id === p.eventId)
+        if (e && !e.genres.includes(genre)) return false
+      }
+      return true
     })
 
-    const entityItems = djs.map((d, i) => ({
+    const entityItems = clubs.map((c, i) => ({
       type: 'entity',
-      id: 'd-' + d.id,
-      sortKey: new Date(Date.now() - (i * 2 + 1) * 24 * 3600 * 1000).toISOString(),
-      data: d,
+      id: 'c-' + c.id,
+      sortKey: new Date(Date.now() - (i * 3 + 2) * 24 * 3600 * 1000).toISOString(),
+      data: c,
     }))
     const postItems = posts.map((p) => ({
       type: 'post',
@@ -37,9 +49,9 @@ export default function DJs() {
   return (
     <div>
       <section className="px-4 pt-4 pb-1">
-        <h1 className="font-serif text-3xl">DJs</h1>
+        <h1 className="font-serif text-3xl">Clubs</h1>
         <p className="text-sm text-muted mt-1">
-          Follow the artists. Hear what they're playing. Book them for your room.
+          Regular nights, weekly residents, the rooms that always deliver.
         </p>
       </section>
 
@@ -52,14 +64,14 @@ export default function DJs() {
       <section>
         {feed.length === 0 ? (
           <p className="px-4 py-16 text-center text-muted">
-            No DJs in that genre yet.
+            No clubs match that genre yet.
           </p>
         ) : (
           feed.map((item) =>
             item.type === 'post' ? (
               <PostCard key={item.id} post={item.data} />
             ) : (
-              <EntityCard key={item.id} entity={item.data} kind="dj" />
+              <EntityCard key={item.id} entity={item.data} kind="club" />
             ),
           )
         )}

@@ -1,16 +1,15 @@
 import { Outlet } from 'react-router-dom'
-import { NavBar } from './components/NavBar'
+import { BottomNav } from './components/BottomNav'
+import { TopBar } from './components/TopBar'
 
 export default function App() {
   return (
-    <div className="min-h-screen bg-bg text-sand">
-      <NavBar />
-      <main className="pt-14">
+    <div className="min-h-screen bg-bg text-sand flex flex-col">
+      <TopBar />
+      <main className="flex-1 mx-auto w-full max-w-xl pb-24">
         <Outlet />
       </main>
-      <footer className="mt-24 border-t border-border/60 py-8 text-center text-xs tracking-[0.3em] uppercase text-muted">
-        Cape Town · Built for the night
-      </footer>
+      <BottomNav />
     </div>
   )
 }
